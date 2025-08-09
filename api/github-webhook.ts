@@ -183,7 +183,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const signature = req.headers['x-hub-signature-256'] as string | undefined;
     const event = req.headers['x-github-event'] as string | undefined;
-    const body = req.rawBody ? req.rawBody.toString() : JSON.stringify(req.body || '');
+    const raw = (req as any).rawBody;
+    const body = raw ? raw.toString() : JSON.stringify(req.body ?? '');
 
     const secret = process.env.GITHUB_WEBHOOK_SECRET || '';
     if (secret && signature && !verifySignature(body, signature, secret)) {
