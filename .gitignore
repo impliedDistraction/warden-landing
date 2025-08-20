@@ -27,3 +27,12 @@ pnpm-debug.log*
 
 # Vercel build output
 .vercel/
+
+# Social Media Bot
+social-media-bot/node_modules/
+social-media-bot/dist/
+social-media-bot/.env
+social-media-bot/.env.local
+social-media-bot/data/
+social-media-bot/logs/
+social-media-bot/.env.*
