@@ -1,0 +1,148 @@
+---
+// Demo page to test AB Testing components
+import { ABTestEnabledHeroSection } from '../components/ABTestEnabledHeroSection.tsx';
+import { ABTestEnabledCTASection } from '../components/ABTestEnabledCTASection.tsx';
+import { EnhancedHeroSection } from '../components/EnhancedHeroSectionV2.tsx';
+import { EnhancedCTASection } from '../components/EnhancedCTASection.tsx';
+import { cta } from '../site.config';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>AB Testing Demo - Warden Landing</title>
+    <meta name="description" content="Demo page for AB testing components" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body class="font-sans bg-black text-white">
+    <div class="fixed top-4 left-4 z-50 bg-blue-900/80 backdrop-blur px-4 py-2 rounded-lg">
+      <h1 class="text-lg font-bold text-blue-300">AB Testing Demo</h1>
+      <p class="text-xs text-gray-300">Compare original vs AB-enabled components</p>
+    </div>
+
+    <!-- AB Testing Control Panel -->
+    <div class="fixed top-4 right-4 z-50 bg-gray-900/90 backdrop-blur p-4 rounded-lg max-w-xs">
+      <h2 class="font-bold text-green-400 mb-2">Debug Controls</h2>
+      <div class="space-y-2 text-sm">
+        <button 
+          onclick="console.log('Debug Info:', window.ABTesting?.getDebugInfo?.())" 
+          class="block w-full bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-white"
+        >
+          Log Debug Info
+        </button>
+        <button 
+          onclick="window.ABTesting?.forceVariant?.('hero-messaging-test', 'protective-focus')" 
+          class="block w-full bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white"
+        >
+          Force Hero Alt
+        </button>
+        <button 
+          onclick="window.ABTesting?.forceVariant?.('cta-messaging-test', 'tech-focus')" 
+          class="block w-full bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-white"
+        >
+          Force CTA Tech
+        </button>
+        <button 
+          onclick="localStorage.clear(); location.reload();" 
+          class="block w-full bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white"
+        >
+          Reset & Reload
+        </button>
+      </div>
+    </div>
+
+    <main class="pt-20">
+      <!-- AB Testing Enabled Hero -->
+      <section class="border-b-4 border-blue-500/50">
+        <div class="bg-gradient-to-r from-blue-900/20 to-transparent p-4">
+          <h2 class="text-2xl font-bold text-blue-400">AB Enabled Hero Section</h2>
+          <p class="text-gray-300">This version uses AB testing variants</p>
+        </div>
+        <ABTestEnabledHeroSection client:load />
+      </section>
+
+      <!-- Spacer -->
+      <div class="py-8 bg-gray-800/50 text-center">
+        <h3 class="text-xl text-gray-400">--- COMPARISON SECTION ---</h3>
+      </div>
+
+      <!-- Original Hero for Comparison -->
+      <section class="border-b-4 border-green-500/50">
+        <div class="bg-gradient-to-r from-green-900/20 to-transparent p-4">
+          <h2 class="text-2xl font-bold text-green-400">Original Hero Section</h2>
+          <p class="text-gray-300">Original static version for comparison</p>
+        </div>
+        <EnhancedHeroSection 
+          title="Warden: The Shield in the Deep"
+          subtitle="Mining is still dangerous. We're building guardians who never blink."
+          quote="Mining can't be rewritten overnight—but we can begin with intelligence, respect, and armor."
+          cta={{ text: "Join the Mission", link: "#join" }}
+          client:load 
+        />
+      </section>
+
+      <!-- Another Spacer -->
+      <div class="py-8 bg-gray-800/50 text-center">
+        <h3 class="text-xl text-gray-400">--- CTA SECTION COMPARISON ---</h3>
+      </div>
+
+      <!-- AB Testing Enabled CTA -->
+      <section class="border-b-4 border-purple-500/50">
+        <div class="bg-gradient-to-r from-purple-900/20 to-transparent p-4">
+          <h2 class="text-2xl font-bold text-purple-400">AB Enabled CTA Section</h2>
+          <p class="text-gray-300">This version tests different CTA messaging</p>
+        </div>
+        <ABTestEnabledCTASection client:load />
+      </section>
+
+      <!-- Original CTA for Comparison -->
+      <section>
+        <div class="bg-gradient-to-r from-orange-900/20 to-transparent p-4">
+          <h2 class="text-2xl font-bold text-orange-400">Original CTA Section</h2>
+          <p class="text-gray-300">Original static version for comparison</p>
+        </div>
+        <EnhancedCTASection
+          heading={cta.heading}
+          subtitle={cta.subtitle}
+          form={cta.form}
+          client:load
+        />
+      </section>
+    </main>
+
+    <!-- Debug Console Output -->
+    <div class="fixed bottom-4 left-4 right-4 bg-black/90 border border-gray-700 rounded-lg p-4 max-h-32 overflow-y-auto font-mono text-xs text-green-400">
+      <div id="debug-log">
+        <p>🧪 AB Testing Debug Console - Open browser DevTools to see AB test logs</p>
+        <p>💡 Use the debug buttons above to test different variants</p>
+      </div>
+    </div>
+
+    <script>
+      // Enable debug mode for this demo
+      if (typeof window !== 'undefined') {
+        // Override console.log to also show in debug panel
+        const originalLog = console.log;
+        console.log = function(...args) {
+          originalLog.apply(console, args);
+          
+          const debugLog = document.getElementById('debug-log');
+          if (debugLog && args.some(arg => typeof arg === 'string' && arg.includes('[AB Test]'))) {
+            const logEntry = document.createElement('p');
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${args.join(' ')}`;
+            debugLog.appendChild(logEntry);
+            
+            // Keep only last 10 entries
+            while (debugLog.children.length > 10) {
+              debugLog.removeChild(debugLog.firstChild);
+            }
+            
+            debugLog.scrollTop = debugLog.scrollHeight;
+          }
+        };
+      }
+    </script>
+  </body>
+</html>
